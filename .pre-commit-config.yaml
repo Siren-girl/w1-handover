@@ -1,0 +1,45 @@
+# 配置说明见 https://pre-commit.com
+# rev 要填具体的版本号，不要填 main —— 否则每次跑的结果可能不同，失去可复现性
+
+default_language_version:
+  python: python3.12
+
+repos:
+  # ① 通用卫生检查
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace          # 删行尾空格
+      - id: end-of-file-fixer            # 文件末尾加换行
+      - id: mixed-line-ending            # 统一行尾符（★ 团队里有 Windows 用户时必配）
+        args: [--fix=lf]
+      - id: check-yaml
+      - id: check-toml
+      - id: check-json
+      - id: check-merge-conflict         # 有没有忘了删的 <<<<<<< HEAD
+      - id: check-added-large-files      # ★ 拦住大文件，见 §6
+        args: ['--maxkb=1024']           # 超过 1 MB 就拒绝
+      - id: detect-private-key           # ★ 拦住私钥
+      - id: check-case-conflict          # 拦住只有大小写不同的文件名（macOS/Windows 会出事）
+
+  # ② ruff：lint + format 二合一（W2 详讲）
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.17.3
+    hooks:
+      - id: ruff-check                   # lint
+        args: [--fix]                    # 能自动修的直接修
+      - id: ruff-format                  # 格式化
+
+  # ③ shell 脚本检查
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.11.0.1
+    hooks:
+      - id: shellcheck
+
+  # ④ 提交信息规范
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v4.3.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
+        args: [feat, fix, docs, refactor, test, chore, perf, style, build, ci, revert]

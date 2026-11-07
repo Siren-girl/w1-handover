@@ -30,6 +30,16 @@ src = ["src", "tests", "scripts"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+# ★ RUF 里有三条「Unicode 同形字」规则：RUF001（字符串）/ RUF002（docstring）/ RUF003（注释）。
+#   它们会把中文标点 ，（）：；？！ 判成「和 ASCII 逗号括号长得像的危险字符」而报错。
+#   本教程所有代码的注释和 docstring 都是中文，不配这句第一次跑 pre-commit 必挂（见 §5.6 末尾）。
+#   用 allowed-confusables 精确放行，而不是 ignore 掉整条规则——后者连真正危险的
+#   西里尔字母 а（U+0430，冒充拉丁 a）也一起放过了。
+allowed-confusables = [
+    "，", "、", "。", "；", "：", "？", "！", "（", "）",
+    "“", "”", "‘", "’", "「", "」", "《", "》",
+    "×", "·", "…", "★", "§", "→",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
