@@ -1,0 +1,53 @@
+name: CI
+
+# 什么时候触发
+on:
+  push:
+    branches: [main]        # push 到 main
+  pull_request:             # 任何 PR（默认针对所有分支）
+
+# 允许同一分支的新 push 取消还在跑的旧任务（省时间）
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04   # ★ 和生产环境一致，别用 ubuntu-latest（它会悄悄升级）
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true          # 缓存 uv 的下载，第二次跑快很多
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: uv sync --all-extras --group dev
+
+      - name: Lint (ruff)
+        run: uv run ruff check .
+
+      - name: Format check (ruff)
+        run: uv run ruff format --check .     # ★ --check 只检查不改，CI 里必须用这个
+
+      - name: Type check (mypy)
+        run: uv run mypy src
+
+      - name: Test
+        run: uv run pytest -q --cov=src --cov-report=term-missing
+
+      - name: Shell lint
+        # ★ 不要写成 `uv run shellcheck scripts/*.sh || true`：
+        #   glob 匹配不到文件时 shellcheck 会退出码 51，|| true 能压掉它，
+        #   但它同时把所有真正的 shell 报错也压掉了 —— CI 永远绿，等于没检查（§5.6 的假绿同理）。
+        #   正确做法是「没有 .sh 就明确跳过，有就严格检查」。
+        run: |
+          if compgen -G 'scripts/*.sh' > /dev/null; then
+            uv run shellcheck scripts/*.sh
+          else
+            echo "scripts/ 下暂无 .sh 文件，跳过 shell lint"
+          fi

@@ -1,0 +1,68 @@
+# .gitignore —— Python 数据项目模板（W1 §6.3）
+# ★ 注释必须独占一行：gitignore 不支持行尾注释，写在模式后面的 # 会被当成模式的一部分，
+#   导致那条规则静默失效。
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+
+# ---- 工具缓存 ----
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.ipynb_checkpoints/
+
+# ---- 密钥：★ 最重要的一组 ----
+.env
+.env.*
+# 取反：但模板要进仓库
+!.env.example
+*.pem
+*.key
+secrets.yaml
+credentials.json
+
+# ---- IDE / 系统 ----
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# ---- 数据与产物：★ 数据岗最重要的一组 ----
+# ★ 用 data/* 而不是 data/：目录被整体忽略时 git 不会再进去，
+#   取反规则对目录内的文件无效；改成 data/* 才能重新放行 README.md
+data/*
+!data/README.md
+*.parquet
+*.mcap
+*.db3
+*.mp4
+*.h5
+*.hdf5
+*.safetensors
+*.pt
+*.pth
+*.ckpt
+*.npy
+*.npz
+*.bag
+
+# ---- 日志与临时 ----
+logs/
+*.log
+*.tmp
+.rsync-partial/
+tmp/
+
+# ---- DVC / LFS 的产物 ----
+# 注意：*.dvc 和 dvc.lock 【要进】仓库，不要 ignore
+/tmp/
+/cache/
